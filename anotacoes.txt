@@ -1,0 +1,137 @@
+Alteração no BD, tabela de Preco
+
+rodar o script:
+
+delete from tblPreco;
+
+alter table tblPreco
+	change preco primeiraHora double not null,
+	change nome demaisHoras double not null;
+
+insert into tblPreco(primeiraHora, demaisHoras, idTipoVeiculo)
+        values(28.7, 20 , 8), (40, 30,  9),(15, 10, 7);
+
+
+
+
+
+
+
+
+SET @horaEntrada := (select horaEntrada from tblMovimentacao where id = {$id});
+        SET @horaSaida := (curtime());
+        
+        SET @dataEntrada := (select dataEntrada from tblMovimentacao where id = {$id});
+        SET @dataSaida := (curdate());
+        
+        SET @permanenciaHora  = timediff(@horaEntrada, @horaSaida);
+        SET @permanenciaDias  = datediff(@dataSaida, @dataEntrada);
+        
+        select @permanenciaDias;
+        
+        SELECT 
+                        tblMovimentacao.id,
+                        tblMovimentacao.dataEntrada,
+                        @dataSaida AS dataSaida,
+                        tblMovimentacao.horaEntrada,               
+                        @horaSaida AS horaSaida,
+                        @permanenciaDias AS dias,
+                        @permanenciaHora AS horas,
+                                        
+                        IF (
+                            @permanenciaDias > 0,
+                            120,																			
+                            IF(
+                                hour(@permanenciaHora) > 0 & minute(@permanenciaHora) > 0, 					
+                                tblPreco.demaisHoras * hour(@permanenciaHora) + tblPreco.primeiraHora, 		
+                            
+                                IF(																			
+                                    hour(@permanenciaHora) = 0 & minute(@permanenciaHora) < 60,				
+                                    tblPreco.primeiraHora,													
+                                    null																	
+                                )																
+                            )
+                        ) as valor,
+                        
+                        
+                        tblVeiculo.placa,
+                        tblVeiculo.fabricante,
+                        tblVeiculo.modelo,
+                        
+                        tblCor.nome as cor,
+                        tblTipoVeiculo.nome as tipo,
+                        tblCliente.nome as cliente,
+                        tblCliente.telefone,
+                        
+                        upper(concat_ws('-', tblPiso.nome, tblSetor.nome, tblCorredor.nome, tblVaga.codigo)) as sigla,
+                        tblVaga.codigo as codigo,
+                        
+                        tblCorredor.nome as corredor,
+                        tblSetor.nome as setor,
+                        tblPiso.nome as piso
+                        FROM tblMovimentacao
+                            INNER JOIN tblVeiculo 
+                                ON tblMovimentacao.idVeiculo = tblVeiculo.id
+                                
+                            INNER JOIN tblCor
+                                ON tblVeiculo.idCor = tblCor.id
+                                
+                            INNER JOIN tblTipoVeiculo
+                                ON tblVeiculo.idTipoVeiculo = tblTipoVeiculo.id
+                            
+                            INNER JOIN tblPreco
+                                ON tblTipoVeiculo.id = tblPreco.idTipoVeiculo
+                            
+                            INNER JOIN tblCliente
+                                ON tblVeiculo.idCliente = tblCliente.id
+                            
+                            INNER JOIN tblVaga
+                                ON tblMovimentacao.idVaga = tblVaga.id
+                            INNER JOIN tblCorredor
+                                ON tblVaga.idCorredor = tblCorredor.id
+                            INNER JOIN tblSetor
+                                ON tblCorredor.idSetor = tblSetor.id
+                            INNER JOIN tblPiso
+                                ON tblSetor.idPiso = tblPiso.id
+                            
+                        WHERE tblMovimentacao.id = {$id};		
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        // Chamando a controller para calcular o valor que o cliente deverá pagar
+        $dados = registrarSaida($id);
+
+        // Verificando o retorno da controller
+        if(is_array($dados) && !isset($dados['idErro'])) {
+
+            // Criando um JSON com os dados atualizados
+            $dadosJSON = createJSON($dados);
+
+            // Retornando os dados para o cliente
+            return $response->write($dadosJSON)
+                            ->withHeader('Content-Type', 'application/json')
+                            ->withStatus(200);
+        } else  {
+            // Criando um JSON com a mensagem de erro
+            $dadosJSON = createJSON($dados);
+
+            return $response->write('{"message": "Não foi possível gerar saída.", "Erro":'. $dadosJSON . '}')
+                            ->withHeader('Content-Type', 'application/json')
+                            ->withStatus(400);
+        }                        
