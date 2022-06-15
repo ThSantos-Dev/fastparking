@@ -127,6 +127,7 @@ function selectByEstacionado()
             // Montando um array personalizado com os dados obtidos
             $arraydados[$contador] = array(
                 "id" => $resultado['id'],
+                "valor" => $resultado['valor'],
 
                 "cliente" => array(
                     "nome" => $resultado['cliente'],

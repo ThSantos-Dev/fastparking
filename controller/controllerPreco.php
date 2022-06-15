@@ -23,6 +23,12 @@ function inserirPreco($dados) {
     if(!empty($dados)){
         // Validação para verificar se os campos obrigatórios foram preenchidos (Valores: primeira e demais horas e ID do tipo de veículo)
         if(is_numeric($dados['primeiraHora']) && $dados['primeiraHora'] > 0 && is_numeric($dados['demaisHoras']) && $dados['demaisHoras'] > 0 && is_numeric($dados['idTipoVeiculo']) && $dados['idTipoVeiculo'] > 0){
+            // Validação para verificar se o preço do tipo de veículo informado já existe
+            $existe = verifyTypePreco($dados['idTipoVeiculo']);
+
+            if($existe) 
+                return MESSAGES['error']['Insert'][0];
+
             // Chamando a model e passando os dados para inserção de Preço
             $resposta = insertPreco($dados);
 

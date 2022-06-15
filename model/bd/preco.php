@@ -173,4 +173,45 @@ function selectAllPrecos() {
     // Retornando os dados encontrados ou false
     return isset($arraydados) ? $arraydados : false;
 }
+
+/**
+ * Função responsável por verificar se há preço cadastrado para um tipo de veículo
+ * @author Thales Santos
+ * @param Int $idTipoVeiculo ID do tipo do veículo
+ * @return Bool 
+ */
+function verifyTypePreco($idTipoVeiculo) {
+    // Abrindo conexão com o BD
+    $conexao = conexaoMySQL();
+
+    // Script SQL para verificar se o ID Tipo de Veículo já pertence a um preço
+    $sql = "SELECT * FROM tblPreco 
+                WHERE idTipoVeiculo = {$idTipoVeiculo}";
+    
+    $resposta = mysqli_query($conexao, $sql);
+   
+    // Validação para verificar se houve retorno
+    if($resposta) {
+        // Convertendo os dados obtidos em  array
+        $contador = 0;
+        while($resultado = mysqli_fetch_assoc($resposta)) {
+            // Montando um array personalizado com os dados obtidos
+            $arraydados[$contador] = array(
+                "id" => $resultado['id']
+            );
+
+         // Incrementando o contador para que não haja sobrescrita dos dados
+         $contador++;
+        }
+    }
+
+
+    // Solitando o fechamento da conexão com o BD
+    fecharConexaoMySQL($conexao);
+
+    // Retornando os dados encontrados ou false
+    return isset($arraydados) ? true : false;
+
+}
+
  ?>

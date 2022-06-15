@@ -27,7 +27,6 @@ function inserirCor($nome){
 
         //validação para verificar se o campo obrigatório 'Nome' foi informado
         if(!empty($nome)){
-
              //chamando a model e passando a cor 
              if (insertCor($nome))
                 return true;

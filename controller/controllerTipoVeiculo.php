@@ -21,7 +21,6 @@ function inserirTipoVeiculo($nome){
 
         //validação para informar se o campo obrigatório 'nome foi informado'
         if(!empty($nome)){
-
             //chamar a model e passar a cor 
             if(insertTipoVeiculo($nome))
                 return true;
